@@ -69,6 +69,54 @@ Arguments:
 Used by:
   - `SerialDriver`_
 
+CAN Ports
+~~~~~~~~~~~~
+
+RawCANPort
++++++++++++++
+A :any:`RawSerialPort` is a CAN port accessible via socketcan.
+
+.. code-block:: yaml
+
+   RawSerialPort:
+     bus: 'can0'
+     speed: 500000
+
+The example would access the can0 can bus on the local computer
+
+Arguments:
+  - bus (str): The socketcan bus name, e.g. ``can0``
+  - speed (int, default=500000): desired can baud rate
+
+Used by:
+  - `CANDriver`_
+
+NetworkCANPort
++++++++++++++++++
+A :any:`NetworkCANPort` describes a can port which is exported over the
+network using `socketcand <https://github.com/linux-can/socketcand>`
+
+.. code-block:: yaml
+
+   NetworkCANPort:
+     host: 'remote.example.computer'
+     port: 29536
+     bus: 'can0'
+     speed: 500000
+
+The example would access the can0 socketcan port on computer
+``remote.example.computer`` via port ``29536`` and use a baud rate of
+``500000`` over socketcand.
+
+Arguments:
+  - host (str): hostname of the remote host-device
+  - port (str): TCP port on the remote host to connect to
+  - bus (str): CAN bus name to connect to, e.g. ``can0``
+  - speed (int, default=500000): baud rate of the can port
+
+Used by:
+  - `CANDriver`_
+
 ModbusRTU
 +++++++++
 A :any:`ModbusRTU` resource is required to use the `ModbusRTUDriver`_.
@@ -1645,6 +1693,29 @@ Arguments:
   - txdelay (float, default=0.0): time in seconds to wait before sending each byte
   - timeout (float, default=3.0): time in seconds to wait for a network serial port before
     an error occurs
+
+CANDriver
+~~~~~~~~~~~~
+A :any:`CANDriver` connects to a can port. It requires one of the can
+port resources.
+
+This driver connects using the `python-can <https://pypi.org/project/python-can/>`_
+library.
+
+Binds to:
+  port:
+    - `NetworkCANPort`_
+    - `RawCANPort`_
+
+.. code-block:: yaml
+
+   CANDriver:
+
+Implements:
+  - None
+
+Arguments:
+  - None
 
 ModbusRTUDriver
 ~~~~~~~~~~~~~~~

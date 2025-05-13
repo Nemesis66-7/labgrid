@@ -1,6 +1,7 @@
-from .base import SerialPort, NetworkInterface, EthernetPort, SysfsGPIO
+from .base import SerialPort, CANPort, NetworkInterface, EthernetPort, SysfsGPIO
 from .ethernetport import SNMPEthernetPort
 from .serialport import RawSerialPort, NetworkSerialPort
+from .canport import RawCANPort, NetworkCANPort
 from .modbus import ModbusTCPCoil
 from .modbusrtu import ModbusRTU
 from .networkservice import NetworkService

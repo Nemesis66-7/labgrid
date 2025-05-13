@@ -14,6 +14,17 @@ class SerialPort(Resource):
     port = attr.ib(default=None)
     speed = attr.ib(default=115200, validator=attr.validators.instance_of(int))
 
+@attr.s(eq=False)
+class CANPort(Resource):
+    """The basic CANPort describes port and speed
+
+    Args:
+        bus (str): The can bus name to connect to
+        speed (int): speed of the port, defaults to 500000
+    """
+    bus = attr.ib(default=None)
+    speed = attr.ib(default=500000, validator=attr.validators.instance_of(int))
+
 
 @target_factory.reg_resource
 @attr.s(eq=False)

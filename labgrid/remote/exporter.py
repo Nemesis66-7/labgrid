@@ -305,6 +305,104 @@ exports["RawSerialPort"] = SerialPortExport
 
 
 @attr.s(eq=False)
+class CANPortExport(ResourceExport):
+    """ResourceExport for a USB or Raw CANPort"""
+
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        if self.cls == "RawCANPort":
+            from ..resource.canport import RawCANPort
+
+            self.local = RawCANPort(target=None, name=None, **self.local_params)
+        self.data["cls"] = "NetworkCANPort"
+        self.child = None
+        self.port = 29536 # Default socketcand port
+        self.socketcand_bin = shutil.which("socketcand")
+        if self.socketcand_bin is None:
+            if os.path.isfile("/usr/local/sbin/socketcand"):
+                self.socketcand_bin = "/usr/local/sbin/socketcand"
+
+            if self.socketcand_bin is None:
+                warnings.warn("socketcand binary not found, falling back to /usr/sbin/socketcand")
+                self.socketcand_bin = "/usr/sbin/socketcand"
+
+    def __del__(self):
+        if self.child is not None:
+            self.stop()
+
+    def _get_start_params(self):
+        return {
+            "bus": self.local.bus,
+            "speed": self.local.speed,
+        }
+
+    def _get_params(self):
+        """Helper function to return parameters"""
+        return {
+            "host":  self.host,
+            "port":  self.port,
+            "bus":   self.local.bus,
+            "speed": self.local.speed,
+        }
+
+    def _start(self, start_params):
+        """Start ``socketcand`` subprocess"""
+        assert self.local.avail
+        assert self.child is None
+        assert "can" in start_params["bus"] # Assume can0 or vcan0, etc
+
+        # TODO: Check if socketcand is already running
+        # TODO: Make sure to handle multiple interfaces
+
+        # Startup appropriate can interface
+        # TODO: Check results
+        result = subprocess.run(["sudo", "ip", "link", "set", start_params["bus"], "type", "can", "bitrate", str(start_params["speed"]), "sample-point", "0.8"])
+        result = subprocess.run(["sudo", "ip", "link", "set", start_params["bus"], "up"])
+        result = subprocess.run(["sudo", "ip", "link", "set", start_params["bus"], "txqueuelen", "65536"])
+
+        # Startup socketcand
+        cmd = [
+            self.socketcand_bin,
+            "-p",
+            str(self.port),           # Default socketcand port
+            "-i",
+            start_params['bus'], # CAN interface to use
+            "-l",
+            "any",                    # Ensure to set any interface, required for ssh port forwarding (proxy)
+            "-q",                        # Enable TCP_QUICKACK
+        ]
+        self.logger.info("Starting socketcand with: %s", " ".join(cmd))
+        self.child = subprocess.Popen(cmd)
+        try:
+            self.child.wait(timeout=0.5)
+            raise ExporterError(f"socketcand for {start_params['bus']} exited immediately")
+        except subprocess.TimeoutExpired:
+            # good, socketcand didn't exit immediately
+            pass
+        self.logger.info("started socketcand for %s w/ speed %s", start_params["bus"], start_params["speed"])
+
+    def _stop(self, start_params):
+        """Stop ``socketcand`` subprocess"""
+        assert self.child
+        child = self.child
+        self.child = None
+        child.terminate()
+        try:
+            child.wait(2.0)  # socketcand takes about a second to react
+        except subprocess.TimeoutExpired:
+            self.logger.warning("socketcand for %s still running after SIGTERM", start_params["bus"])
+            log_subprocess_kernel_stack(self.logger, child)
+            child.kill()
+            child.wait(1.0)
+        self.logger.info("stopped socketcand for %s w/ speed %s", start_params["bus"], start_params["speed"])
+
+        # TODO: Check result
+        self.logger.info("taking down %s interface", start_params["bus"])
+        result = subprocess.run(["sudo", "ip", "link", "set", start_params["bus"], "down"])
+
+exports["RawCANPort"] = CANPortExport
+
+@attr.s(eq=False)
 class NetworkInterfaceExport(ResourceExport):
     """ResourceExport for a network interface"""
 
