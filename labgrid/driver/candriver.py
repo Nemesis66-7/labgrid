@@ -47,6 +47,12 @@ class CANDriver(ConsoleExpectMixin, Driver):
 
     @Driver.check_active
     @step()
+    def get_ecu(self):
+        """Access underlying bus."""
+        return self.bus
+
+    @Driver.check_active
+    @step()
     def send(self, msg, timeout_sec=0):
         return self.bus.send(msg, timeout_sec)
 
@@ -86,7 +92,7 @@ class CANDriver(ConsoleExpectMixin, Driver):
         """Opens the can port, does nothing if it is already open"""
         if not self.bus:
             if isinstance(self.port, CANPort):
-                self.bus = can.interface.Bus(bustype="socketcan", channel=self.port.port)
+                self.bus = can.interface.Bus(bustype="socketcan", channel=self.port.bus)
             else:
                 host, port = proxymanager.get_host_and_port(self.port)
                 self.bus = can.interface.Bus(bustype="socketcand", channel=self.port.bus, host=host, port=port)

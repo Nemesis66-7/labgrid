@@ -90,6 +90,7 @@ Arguments:
 
 Used by:
   - `CANDriver`_
+  - `J1939Driver`_
 
 NetworkCANPort
 +++++++++++++++++
@@ -116,6 +117,7 @@ Arguments:
 
 Used by:
   - `CANDriver`_
+  - `J1939Driver`_
 
 ModbusRTU
 +++++++++
@@ -1710,6 +1712,29 @@ Binds to:
 .. code-block:: yaml
 
    CANDriver:
+
+Implements:
+  - None
+
+Arguments:
+  - None
+
+J1939Driver
+~~~~~~~~~~~~
+A :any:`J1939Driver` connects to a can port and returns a python J1939 ECU. It
+requires one of the can port resources.
+
+This driver connects using the `can-j1939 <https://pypi.org/project/can-j1939/>`_
+library.
+
+Binds to:
+  port:
+    - `NetworkCANPort`_
+    - `RawCANPort`_
+
+.. code-block:: yaml
+
+   J1939Driver:
 
 Implements:
   - None
