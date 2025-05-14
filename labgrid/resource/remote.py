@@ -332,6 +332,14 @@ class NetworkHIDRelay(RemoteUSBResource):
         self.timeout = 10.0
         super().__attrs_post_init__()
 
+@target_factory.reg_resource
+@attr.s(eq=False)
+class RemoteIonopi(NetworkResource):
+    manager_cls = RemotePlaceManager
+
+    """The RemoteIonopi describes a remotely accessible ionopi device"""
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
 
 @target_factory.reg_resource
 @attr.s(eq=False)

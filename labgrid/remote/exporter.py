@@ -774,6 +774,43 @@ class GPIOSysFSExport(ResourceExport):
 exports["SysfsGPIO"] = GPIOSysFSExport
 exports["MatchedSysfsGPIO"] = GPIOSysFSExport
 
+@attr.s(eq=False)
+class IonopiExport(ResourceExport):
+    """ResourceExport for Ionopi devices"""
+
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        if self.cls == "Ionopi":
+            from ..resource.ionopi import Ionopi
+
+            self.local = Ionopi(target=None, name=None, **self.local_params)
+
+        self.data["cls"] = "RemoteIonopi"
+
+    def _get_params(self):
+        """Helper function to return parameters"""
+        return {
+            "host": self.host
+        }
+
+    def _get_start_params(self):
+        return {}
+
+    def acquire(self, *args, **kwargs):
+        if self.broken:
+            raise BrokenResourceError(f"cannot acquire broken resource (original reason): {self.broken}")
+        super().acquire(*args, **kwargs)
+        self.poll()
+
+    def release(self, *args, **kwargs):
+        if self.broken:
+            raise BrokenResourceError(f"cannot release broken resource (original reason): {self.broken}")
+        super().release(*args, **kwargs)
+        self.poll()
+
+
+exports["Ionopi"] = IonopiExport
+
 
 @attr.s
 class NetworkServiceExport(ResourceExport):

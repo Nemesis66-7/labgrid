@@ -50,3 +50,4 @@ from .dediprogflashdriver import DediprogFlashDriver
 from .httpdigitaloutput import HttpDigitalOutputDriver
 from .candriver import CANDriver
 from .j1939driver import J1939Driver
+from .ionopidriver import IonopiDriver
