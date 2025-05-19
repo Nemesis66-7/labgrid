@@ -1261,6 +1261,22 @@ Arguments:
 Used by:
   - none
 
+Ionopi
+~~~~~~
+
+A :any:`Ionopi` resource describes an Ionopi raspberry pi hat.
+
+.. code-block:: yaml
+
+   Ionopi: {}
+
+
+Arguments:
+  - none
+
+Used by:
+  - `IonopiRelayDriver`_
+
 Providers
 ~~~~~~~~~
 Providers describe directories that are accessible by the target over a
@@ -3063,6 +3079,20 @@ Key        Description
 Properties of these keys can be selected using the Python format string syntax,
 e.g. ``{device.devnode}`` to select the device node path of a
 :any:`USBFlashableDevice`.
+
+IonopiRelayDriver
+~~~~~~~~~~~~~~~
+The :any:`IonopiRelayDriver` is used to access the relays of an Ionopi resource.
+
+Binds to:
+  ionopi:
+    - `Ionopi`_
+
+Implements:
+  - :any:`DigitalOutputProtocol`
+
+Arguments:
+  - index (int): index of the relay to control (1-4)
 
 DediprogFlashDriver
 ~~~~~~~~~~~~~~~~~~~

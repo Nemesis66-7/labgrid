@@ -48,4 +48,4 @@ from .usbtmcdriver import USBTMCDriver
 from .deditecrelaisdriver import DeditecRelaisDriver
 from .dediprogflashdriver import DediprogFlashDriver
 from .httpdigitaloutput import HttpDigitalOutputDriver
-from .ionopidriver import IonopiDriver
+from .ionopirelaydriver import IonopiRelayDriver
