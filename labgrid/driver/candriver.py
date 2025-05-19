@@ -47,7 +47,7 @@ class CANDriver(ConsoleExpectMixin, Driver):
 
     @Driver.check_active
     @step()
-    def get_ecu(self):
+    def get_bus(self):
         """Access underlying bus."""
         return self.bus
 
@@ -64,7 +64,7 @@ class CANDriver(ConsoleExpectMixin, Driver):
     @Driver.check_active
     @step()
     def flush_rx_buffer(self):
-        while self.bus.receive(0.001):
+        while self.bus.recv(0.001):
             pass
         return True
 
