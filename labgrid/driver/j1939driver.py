@@ -1,7 +1,8 @@
 import attr
 from pexpect import TIMEOUT
-import can
 import j1939
+import subprocess
+import logging
 
 from ..factory import target_factory
 from .common import Driver
@@ -9,6 +10,9 @@ from .consoleexpectmixin import ConsoleExpectMixin
 from ..step import step
 from ..util.proxy import proxymanager
 from ..resource import CANPort
+from ..labgridclientmanager import ClientManager
+
+logger = logging.getLogger()
 
 @target_factory.reg_driver
 @attr.s(eq=False)
@@ -17,6 +21,7 @@ class J1939Driver(ConsoleExpectMixin, Driver):
     Driver implementing the interface over a CANPort connection
     """
     bindings = {"port": {"CANPort", "NetworkCANPort"}, }
+    client = ClientManager()
 
     # TODO: add FD/SPEED support here
     # txdelay = attr.ib(default=0.0, validator=attr.validators.instance_of(float))
@@ -156,6 +161,27 @@ class J1939Driver(ConsoleExpectMixin, Driver):
         if self.ecu :
             self.ecu.disconnect()
             self.ecu = None
+
+    def create_interface(self, local_channel, local_channel_type):
+        if not self.client.check_vcan(local_channel):
+            logger.warning("Local can not present, setting up...")
+            self.client.setup_vcan(local_channel, local_channel_type)
+        else:
+            logger.info("Local can present, skipping setup...")
+
+        cmd = [
+            "socketcandcl",
+            "--verbose",
+            "--server", str(self.port.host),
+            "--port", str(self.port.port),
+            "--interfaces", f"{self.port.bus},{local_channel}"
+        ]
+
+        self.socketcandcl = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+        logger.info(f"socketcandcl started with PID {self.socketcandcl.pid}")
+
+    def cleanup_interface(self):
+        self.client.kill_process(self.socketcandcl)
 
     def __str__(self):
         return f"J1939Driver({self.target.name})"

@@ -350,9 +350,7 @@ class CANPortExport(ResourceExport):
         assert self.local.avail
         assert self.child is None
         assert "can" in start_params["bus"] # Assume can0 or vcan0, etc
-
-        # TODO: Check if socketcand is already running
-        # TODO: Make sure to handle multiple interfaces
+        self.port = get_free_port()
 
         # Startup appropriate can interface
         # TODO: Check results
