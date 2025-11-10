@@ -17,7 +17,7 @@ class ClientManager:
     def setup_vcan(self, local_channel, local_channel_type):
         try:
             # Load the vcan kernel module
-            subprocess.run(["sudo", "modprobe", str(local_channel)], check=True)
+            subprocess.run(["sudo", "modprobe", str(local_channel_type)], check=True)
             # Add the vcan0 interface
             subprocess.run(["sudo", "ip", "link", "add", "dev", str(local_channel), "type", str(local_channel_type)], check=True)
             # Bring the interface up
